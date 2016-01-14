@@ -1,6 +1,10 @@
 import json
+import os
 import math
 import sys
+from ironicclient import client as iclient
+from swiftclient import client as sclient
+
 
 def convertSize(size):
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -13,46 +17,90 @@ def convertSize(size):
        return '0B'
 
 
-fname = sys.argv[1]
+def getConfig():
+    kwargs = {'os_username': None,
+              'os_password': None,
+              'os_auth_url': None,
+              'os_tenant_name': None
+              }
 
-f = open(fname)
-data = json.load(f)
-f.close()
+    for variable in kwargs.keys():
+        try:
+            kwargs[variable] = os.environ[variable.upper()]
+        except KeyError:
+            print "Variable ${variable} is not set.".format(variable=variable.upper())
+            sys.exit(1)
 
-ram_total = 0
-disks = []
-cpus = {} 
-
-
-for i in data:
-	if i[0] == 'memory' and i[2] == 'size':
-#		print "\t{bank}: {size}".format(bank=i[1], size=convertSize(int(i[3])))
-		ram_total += int(i[3])
-
-	if i[0] == 'disk' and i[2] == 'size':
-		disks.append([i[1], i[3]])
-
-	if i[0] == 'cpu' and i[2] == 'number':
-		cpus[i[1]] = i[3]
-
-	if i[0] == 'ipmi' and i[2] == 'mac-address':
-		ipmi_mac = i[3]
-	if i[0] == 'ipmi' and i[2] == 'ip-address':
-		ipmi_ip = i[3]
+    return(kwargs)
 
 
+def getIronicNodes(kwargs):
+    uuids = []
+    ironic = iclient.get_client(1, **kwargs)
+    nodes = ironic.node.list()
+    for node in nodes:
+        uuids.append(node.uuid)
+
+    return uuids
 
 
-print "Node "+fname.replace('extra_hardware-', '')+" ({ipmi_ip} / {ipmi_mac}): ".format(ipmi_mac=ipmi_mac, ipmi_ip=ipmi_ip)
+def getIntrospectionData(**kwargs):
+    swift = sclient.Connection(
+        user = kwargs['os_username'],
+        key = kwargs['os_password'],
+        authurl = kwargs['os_auth_url'],
+        tenant_name = 'service',
+        auth_version = 2
+        )
+    object_name = "extra_hardware-"+uuid
+    data_touple = swift.get_object('ironic-discoverd',object_name)
+    data = data_touple[1]
 
-print "\tRAM: {size}".format(size=convertSize(ram_total))
-print "\tDisks:"
-for disk in disks:
-	print "\t - /dev/{drive}: {disk_size}".format(drive=disk[0], disk_size=disk[1])
+    return data
 
-print "\tCPU: physical: {physical} / logical: {logical}".format(physical=cpus['physical'], logical=cpus['logical'])
 
-print "\n"
+def prettyPrintNodeData(data):
+    ram_total = 0
+    disks = []
+    cpus = {}
+    ipmi_mac = None
+    ipmi_ip = None
+
+    for i in data_json:
+        if i[0] == 'memory' and i[2] == 'size':
+            ram_total += int(i[3])
+
+        if i[0] == 'disk' and i[2] == 'size':
+            disks.append([i[1], i[3]])
+
+        if i[0] == 'cpu' and i[2] == 'number':
+            cpus[i[1]] = i[3]
+
+        if i[0] == 'ipmi' and i[2] == 'mac-address':
+            ipmi_mac = i[3]
+
+        if i[0] == 'ipmi' and i[2] == 'ip-address':
+            ipmi_ip = i[3]
+
+    print "Node {uuid} ({ipmi_ip} / {ipmi_mac}): ".format(uuid=uuid, ipmi_mac=ipmi_mac, ipmi_ip=ipmi_ip)
+    print "  CPU: physical: {physical} / logical: {logical}".format(physical=cpus['physical'], logical=cpus['logical'])
+    print "  RAM: {size}".format(size=convertSize(ram_total))
+    print "  Disks:"
+    for disk in disks:
+        print "    - /dev/{drive}: {disk_size}".format(drive=disk[0], disk_size=disk[1])
+    print "\n"
+
+
+if __name__ == "__main__":
+
+    kwargs = getConfig()
+    uuids = getIronicNodes(kwargs)
+
+    for uuid in uuids:
+        data = getIntrospectionData(uuid=uuid, **kwargs)
+        data_json = json.loads(data)
+        
+        prettyPrintNodeData(data_json)
 
 
 
