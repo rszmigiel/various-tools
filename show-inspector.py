@@ -34,7 +34,7 @@ def getConfig():
     return(kwargs)
 
 
-def getIronicNodes(kwargs):
+def getIronicNodes(**kwargs):
     uuids = []
     ironic = iclient.get_client(1, **kwargs)
     nodes = ironic.node.list()
@@ -69,7 +69,7 @@ def prettyPrintNodeData(data):
 
     for i in data_json:
         if i[0] == 'memory' and i[2] == 'size':
-            m_total += int(i[3])
+            ram_total += int(i[3])
         if i[0] == 'disk' and i[2] == 'size':
             disks.append([i[1], i[3]])
         if i[0] == 'cpu' and i[2] == 'number':
@@ -83,30 +83,36 @@ def prettyPrintNodeData(data):
             if nic_name not in nics.keys():
                 nics[nic_name] = {}
             if i[2] == 'link':
-                nics[nic_name]['link'] = i[2]
+                nics[nic_name]['link'] = i[3]
             if i[2] == 'speed':
-                nics[nic_name]['speed'] = i[2]
+                nics[nic_name]['speed'] = i[3]
+            if i[2] == 'serial':
+                nics[nic_name]['serial'] = i[3]
 
-    print "Node {uuid} ({ipmi_ip} / {ipmi_mac}): ".format(uuid=uuid, ipmi_mac=ipmi_mac, ipmi_ip=ipmi_ip)
-    print "  CPU: physical: {physical} / logical: {logical}".format(physical=cpus['physical'], logical=cpus['logical'])
+    print "Node {uuid}: ".format(uuid=uuid)
+    print "  IPMI: {ipmi_ip} ({ipmi_mac})".format(ipmi_ip=ipmi_ip, ipmi_mac=ipmi_mac)
+    print "  CPU: physical: {physical}, logical: {logical}".format(physical=cpus['physical'], logical=cpus['logical'])
     print "  RAM: {size}".format(size=convertSize(ram_total))
     print "  Disks:"
     for disk in disks:
         print "    - /dev/{drive}: {disk_size}".format(drive=disk[0], disk_size=disk[1])
     print "  NICs:"
     for nic in nics.keys():
-        print "{nic}: link up: {link}\tlink speed: {speed}".format(nic=nic,
-                link=nics[nic]['link'], speed=nics[nic]['speed'])
+        serial = nics[nic].get('serial', 'Unknown')
+        link = nics[nic].get('link', 'Unknown')
+        speed = nics[nic].get('speed', 'Unknown')
+        print "    - {nic} ({serial}): link up: {link},\tlink speed: {speed}".format(nic=nic,
+                link=link, speed=speed, serial=serial)
     print "\n"
 
 
 if __name__ == "__main__":
 
-    kwargs = getConfig()
-    uuids = getIronicNodes(kwargs)
+    config = getConfig()
+    uuids = getIronicNodes(**config)
 
     for uuid in uuids:
-        data = getIntrospectionData(uuid=uuid, **kwargs)
+        data = getIntrospectionData(uuid=uuid, **config)
         data_json = json.loads(data)
         prettyPrintNodeData(data_json)
 
