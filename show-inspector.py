@@ -40,7 +40,7 @@ def getIronicNodes(**kwargs):
     nodes = ironic.node.list(detail=True)
     for node in nodes:
         try:
-            if node.extra['hardware_aswift_object']:
+            if node.extra['hardware_swift_object']:
                 uuids.append(node.uuid) 
         except KeyError:
             pass
