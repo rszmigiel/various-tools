@@ -37,10 +37,13 @@ def getConfig():
 def getIronicNodes(**kwargs):
     uuids = []
     ironic = iclient.get_client(1, **kwargs)
-    nodes = ironic.node.list()
+    nodes = ironic.node.list(detail=True)
     for node in nodes:
-        uuids.append(node.uuid)
-
+        try:
+            if node.extra['hardware_aswift_object']:
+                uuids.append(node.uuid) 
+        except KeyError:
+            pass
     return uuids
 
 
