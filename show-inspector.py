@@ -43,6 +43,8 @@ def getIronicNodes(**kwargs):
             if node.extra['hardware_swift_object']:
                 uuids.append(node.uuid) 
         except KeyError:
+            print "WARNING: could not find introspection data for node " \
+            "{node}.".format(node=node.uuid)
             pass
     return uuids
 
