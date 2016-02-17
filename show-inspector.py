@@ -93,6 +93,10 @@ def prettyPrintNodeData(data):
                 nics[nic_name]['speed'] = i[3]
             if i[2] == 'serial':
                 nics[nic_name]['serial'] = i[3]
+            if i[2] == 'businfo':
+                nics[nic_name]['businfo'] = i[3]
+
+
 
     print "Node {uuid}: ".format(uuid=uuid)
     print "  IPMI: {ipmi_ip} ({ipmi_mac})".format(ipmi_ip=ipmi_ip, ipmi_mac=ipmi_mac)
