@@ -102,12 +102,22 @@ def prettyPrintNodeData(data):
     for disk in disks:
         print "    - /dev/{drive}: {disk_size}".format(drive=disk[0], disk_size=disk[1])
     print "  NICs:"
-    for nic in nics.keys():
+    nic_n = 1
+    for nic in sorted(nics, key=lambda x: (nics[x]['businfo'])):
         serial = nics[nic].get('serial', 'Unknown')
         link = nics[nic].get('link', 'Unknown')
         speed = nics[nic].get('speed', 'Unknown')
-        print "    - {nic} ({serial}): link up: {link},\tlink speed: {speed}".format(nic=nic,
-                link=link, speed=speed, serial=serial)
+        businfo = nics[nic].get('businfo')
+        if link == 'no':
+            print "    - DOWN: {nic} ({serial}): link up: {link},\tlink speed:"\
+              "{speed},\t{businfo}".format(nic_n=nic_n, nic=nic,
+                  link=link, speed=speed, serial=serial, businfo=businfo)
+        else:
+          print "    - nic{nic_n}: {nic} ({serial}): link up: {link},\tlink speed:"\
+              "{speed},\t{businfo}".format(nic_n=nic_n, nic=nic,
+                  link=link, speed=speed, serial=serial, businfo=businfo)
+          nic_n += 1
+
     print "\n"
 
 
