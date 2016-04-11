@@ -1,0 +1,15 @@
+- name: Copy bootif-fix.service
+  copy: src=roles/undercloud/files/bootif-fix.service dest=/usr/lib/systemd/system/bootif-fix.service mode=444
+  notify:
+          - restart bootif-fix
+          - reload systemd
+
+- name: Enable bootif-fix service
+  service: name=bootif-fix enabled=true
+
+
+- name: Copy bootif-fix
+  copy: src=roles/undercloud/files/bootif-fix dest=/usr/bin/bootif-fix mode=555
+  notify:
+          - restart bootif-fix
+

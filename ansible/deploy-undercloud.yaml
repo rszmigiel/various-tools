@@ -1,0 +1,6 @@
+- hosts: undercloud
+  roles:
+     - common
+     - undercloud
+
+
