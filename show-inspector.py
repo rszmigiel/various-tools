@@ -78,7 +78,7 @@ def prettyPrintNodeData(data):
     ipmi_ip = None
 
     for i in data_json:
-        if i[0] == 'memory' and i[2] == 'size':
+        if i[0] == 'memory' and i[1] == 'total' and i[2] == 'size':
             ram_total += int(i[3])
         if i[0] == 'disk' and i[2] == 'size':
             disks.append([i[1], i[3]])
