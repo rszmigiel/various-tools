@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
+# convertSize() taken from:
+# http://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python
+
 import json
 import os
 import math
