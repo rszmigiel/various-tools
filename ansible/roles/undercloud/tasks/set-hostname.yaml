@@ -1,0 +1,3 @@
+- name: Setting hostname for the director
+  hostname: name={{ director_hostname }}
+

@@ -1,4 +1,4 @@
 [undercloud]
-192.168.122.254 ansible_ssh_user=root
+192.168.122.253 ansible_ssh_user=root
 
 

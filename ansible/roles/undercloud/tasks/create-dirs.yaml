@@ -1,0 +1,7 @@
+- name: Create dirs for templates and images in stack home
+  file: path=/home/stack/{{ item }} state=directory owner=stack group=stack 
+  with_items:
+    - templates
+    - images
+
+

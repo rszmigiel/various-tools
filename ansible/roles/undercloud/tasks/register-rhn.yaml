@@ -1,0 +1,22 @@
+- name: Register system with RHN
+  redhat_subscription: state=present
+                       username={{ rhn['username'] }}
+                       password={{ rhn['password'] }}
+
+#- name: Attach system to the pool
+#  command: /usr/bin/subscription-manager attach --pool={{ rhn['pool'] }} creates=/root/.rhn_{{ rhn['pool'] }}.attached
+#  register: result
+
+- name: Check what pools system is already attached to
+  command: /usr/bin/subscription-manager list --consumed --pool-only 
+  register: subscription_pools
+
+- name: Attach system to the pool
+  command: /usr/bin/subscription-manager attach --pool={{ rhn['pool'] }} 
+  when: rhn['pool'] not in subscription_pools.stdout
+
+
+#- name: Create semaphore for pool registration
+#  file: path=/root/.rhn_{{ rhn['pool'] }}.attached state=touch
+#  when: result.changed == True
+

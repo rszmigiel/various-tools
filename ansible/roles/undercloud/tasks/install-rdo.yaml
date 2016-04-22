@@ -1,0 +1,10 @@
+- name: Install RDO
+  yum: name=python-rdomanager-oscplugin state=present
+
+- name: Install some extra packages...
+  yum: name={{ item }} state=present
+  with_items:
+          - screen
+          - vim
+          - python-tripleoclient
+            

@@ -1,0 +1,38 @@
+rhn:
+  username: 
+  password: 
+  activationkey:
+  pool: 
+
+osp_version: osp8 # osp7, osp8...
+director_hostname: director.osp8.rh
+
+undercloud_config:
+  local_ip: 192.168.111.1
+  network_gateway: 192.168.111.1
+  undercloud_public_vip: 192.168.111.2
+  undercloud_admin_vip: 192.168.111.3
+  local_interface: eth1
+  network_cidr: 192.168.111.0/24
+  masquerade_network: 192.168.111.0/24
+  dhcp_start: 192.168.111.200
+  dhcp_end: 192.168.111.250
+  inspection_range: 192.168.111.10,192.168.111.20
+  undercloud_debug: True
+
+
+repos_to_enable:
+  osp7:
+    - rhel-7-server-rpms 
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-openstack-7.0-rpms
+    - rhel-7-server-openstack-7.0-director-rpms
+    - rhel-7-server-rh-common-rpms
+
+  osp8:
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-openstack-8-rpms
+    - rhel-7-server-openstack-8-director-rpms
+    - rhel-7-server-rh-common-rpms
+

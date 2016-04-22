@@ -1,0 +1,6 @@
+- name: Add hostname to /etc/hosts
+  lineinfile: dest=/etc/hosts backup=yes insertbefore=BOF line="127.0.0.1    {{ ansible_hostname }} {{ ansible_nodename }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
+
+- name: Delete old hosts entry...
+  lineinfile: dest=/etc/hosts backup=no line="127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4" state=absent
+

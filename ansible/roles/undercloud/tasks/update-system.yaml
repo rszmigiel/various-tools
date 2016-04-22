@@ -1,0 +1,3 @@
+- name: Updating the system...
+  yum: name=* state=latest update_cache=yes
+  register: update_result

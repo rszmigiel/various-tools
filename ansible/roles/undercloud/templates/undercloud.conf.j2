@@ -1,0 +1,5 @@
+[DEFAULT]
+{% for key, value in undercloud_config.iteritems() %}
+{{ key }} = {{ value }}
+{% endfor %}
+

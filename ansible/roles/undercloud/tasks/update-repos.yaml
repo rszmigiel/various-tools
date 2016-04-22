@@ -1,0 +1,22 @@
+- name: Disable all repos
+  command: subscription-manager repos --disable=* creates=/home/stack/.repos-disabled-enabled
+  register: disable_repo_result
+
+- set_fact:
+    repos_to_enable: "{{ repos_to_enable[osp_version]}}"
+
+- set_fact: 
+    rhsm_enable_repos: |
+            {% for item in repos_to_enable %}
+              --enable={{ item }}
+            {%- endfor %}
+
+- name: Enable required repos
+  command: subscription-manager repos {{ rhsm_enable_repos }} creates=/home/stack/.repos-disabled-enabled 
+  register: enable_repo_result
+
+
+- name: Create a semaphore for repos disable/enable
+  file: dest=/home/stack/.repos-disabled-enabled owner=stack group=stack state=touch 
+  when: disable_repo_result.rc == 0 and enable_repo_result.rc == 0 
+
