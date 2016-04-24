@@ -1,10 +1,10 @@
-- name: Install RDO
-  yum: name=python-rdomanager-oscplugin state=present
+- name: Install director packages
+  yum: name=python-tripleoclient state=present
 
 - name: Install some extra packages...
   yum: name={{ item }} state=present
   with_items:
+          - rhosp-director-images
+          - rhosp-director-images-ipa
           - screen
           - vim
-          - python-tripleoclient
-            
