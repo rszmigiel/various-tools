@@ -9,20 +9,35 @@ import math
 import sys
 from ironicclient import client as iclient
 from swiftclient import client as sclient
+from ConfigParser import SafeConfigParser
+from ConfigParser import NoOptionError
 
+
+def checkOSPVersion():
+    config = SafeConfigParser()
+    config.read('undercloud.conf')
+    try:
+        config.get('DEFAULT','inspection_iprange')
+    except NoOptionError:
+        osp_version = 7
+    else:
+        osp_version = 8
+
+    return osp_version
 
 def convertSize(size):
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size,1024)))
-   p = math.pow(1024,i)
-   s = round(size/p,2)
-   if (s > 0):
-       return '%s %s' % (s,size_name[i])
-   else:
-       return '0B'
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size,1024)))
+    p = math.pow(1024,i)
+    s = round(size/p,2)
+    if (s > 0):
+        return '%s %s' % (s,size_name[i])
+    else:
+        return '0B'
 
 
 def getConfig():
+    checkOSPVersion()
     kwargs = {'os_username': None,
               'os_password': None,
               'os_auth_url': None,
@@ -35,6 +50,18 @@ def getConfig():
         except KeyError:
             print "Variable ${variable} is not set.".format(variable=variable.upper())
             sys.exit(1)
+    kwargs['discovery_data_container'] = 'ironic-discoverd'
+ 
+    osp_version = checkOSPVersion()
+
+    if osp_version >= 8:
+        config = SafeConfigParser()
+        config.read('undercloud-passwords.conf')
+        ironic_password = config.get('auth','undercloud_ironic_password')
+        kwargs['os_username'] = 'ironic'
+        kwargs['os_tenant_name'] = 'service'
+        kwargs['os_password'] = ironic_password 
+        kwargs['discovery_data_container'] = 'ironic-inspector'
 
     return(kwargs)
 
@@ -62,8 +89,11 @@ def getIntrospectionData(**kwargs):
         tenant_name = 'service',
         auth_version = 2
         )
+
+    discovery_data_container = kwargs['discovery_data_container']
+
     object_name = "extra_hardware-"+uuid
-    data_touple = swift.get_object('ironic-discoverd',object_name)
+    data_touple = swift.get_object(discovery_data_container, object_name)
     data = data_touple[1]
 
     return data
