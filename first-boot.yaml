@@ -1,0 +1,23 @@
+heat_template_version: 2014-10-16
+
+description: 
+
+parameters:
+
+resources:
+  userdata:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+      - config: {get_resource: first_boot}
+
+  first_boot:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: |
+        #!/bin/bash
+        echo "redhat" | passwd --stdin root
+
+outputs:
+  OS::stack_id:
+    value: {get_resource: userdata}
